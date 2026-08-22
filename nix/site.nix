@@ -135,6 +135,16 @@ stdenvNoCC.mkDerivation {
       fi
     done
 
+    # The icon has two silent failure modes. terminal ships its own 190-byte
+    # placeholder favicon.png, so if the project's static/ ever stopped winning
+    # the union filesystem the build would still succeed and still serve an
+    # icon -- just the wrong one. diary instead reads a param and wraps the
+    # link in a `with`, so an unset key emits no icon tag at all.
+    cmp -s static/favicon.png $out/favicon.png \
+      || { echo "$out/favicon.png is not this repo's static/favicon.png"; exit 1; }
+    grep -qE '<link rel="?(shortcut )?icon"? href=[^>]*favicon\.png' $out/index.html \
+      || { echo "no <link rel=icon> pointing at favicon.png in the head"; exit 1; }
+
     # No single file over 2 MB. The migrated ping-pong recording was a 9.8 MB
     # GIF -- three quarters of the repository, re-downloaded in full by every
     # `nix flake update` on the consuming host, and handed to every reader who

@@ -8,6 +8,10 @@ theme = ["diary-overlay", "diary"]
     style = "perldoc"
 
 [params]
+  # terminal hardcodes favicon.png in its head partial; diary reads this param
+  # and emits no icon link at all without it. Both land on static/favicon.png.
+  # Keep bare keys above any sub-table -- after one they belong to it.
+  favicon = "favicon.png"
   enableOpenGraph = true
   enableTwitterCards = false
   disableDarkmode = false
