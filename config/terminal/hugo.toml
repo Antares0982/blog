@@ -27,7 +27,7 @@ theme = ["terminal-overlay", "terminal"]
   dateFormat = "2006-01-02"
   showLastUpdated = true
   toc = true
-  tocTitle = "目录"
+  showLanguageSelector = true
 
   # `showMenuItems` is deliberately unset: Terminal's dropdown is an overflow
   # menu (the first N items inline, the rest under `menuMore`), and with four
@@ -36,8 +36,16 @@ theme = ["terminal-overlay", "terminal"]
   # any item with children outright, so a nested group is not an option here
   # even if the menu grows -- which is why this menu is flat and diary's is not.
 
-  # Terminal ships no i18n files; every UI string is a param, and the fallback
-  # for each is English.
+  [params.logo]
+    logoText = "α-Lyrae"
+    logoHomeLink = "/"
+
+# Terminal ships no i18n files: every UI string is a param, so they have to be
+# set per language rather than translated. These sit here rather than in
+# config/_default/languages.toml because they are this theme's vocabulary --
+# diary carries its own i18n/zh.yaml and needs none of them.
+[languages.zh.params]
+  tocTitle = "目录"
   readMore = "继续阅读"
   readOtherPosts = "其他文章"
   newerPosts = "更新的文章"
@@ -46,27 +54,40 @@ theme = ["terminal-overlay", "terminal"]
   missingContentMessage = "页面不存在"
   missingBackButtonLabel = "回到首页"
 
-  [params.logo]
-    logoText = "α-Lyrae"
-    logoHomeLink = "/"
+# Only the two the theme has no fallback for. `readMore` and `readOtherPosts`
+# are read as `{{ $.Site.Params.ReadMore }}` with no `default`, so leaving them
+# unset renders an empty button rather than an English one. Everything else
+# above falls back to the theme's own English.
+[languages.en.params]
+  readMore = "Read more"
+  readOtherPosts = "Read other posts"
 
-[[menu.main]]
+# Per language. English has one post and no pages, so its menu is just the
+# home link -- Terminal renders no nav at all for a language with an empty
+# menu, which reads as a broken header rather than a spare one.
+[[languages.zh.menu.main]]
   identifier = "home"
   name = "首页"
   url = "/"
   weight = 1
-[[menu.main]]
+[[languages.zh.menu.main]]
   identifier = "about"
   name = "简介"
   url = "/about/"
   weight = 2
-[[menu.main]]
+[[languages.zh.menu.main]]
   identifier = "words"
   name = "杂谈"
   url = "/words/"
   weight = 3
-[[menu.main]]
+[[languages.zh.menu.main]]
   identifier = "archive"
   name = "存档"
   url = "/archive/"
   weight = 4
+
+[[languages.en.menu.main]]
+  identifier = "home"
+  name = "Home"
+  url = "/en/"
+  weight = 1

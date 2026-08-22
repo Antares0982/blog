@@ -14,7 +14,15 @@
   lazy-loading box, but upstream's template drops the attribute, so setting it
   in config alone does nothing. It keeps the iframe out of the initial load,
   which is the whole point of this rebuild.
+
+  The term carries the language for everything but the default one, so
+  /python-json/ maps to `python-json` and /en/python-json/ to `en/python-json`.
+  The two articles are the same subject but not the same conversation, and the
+  Chinese terms must not shift: the migrated WordPress comments are seeded
+  against the bare slugs.
 */}}
+{{- $term := .Params.slug | default .File.ContentBaseName -}}
+{{- with site.LanguagePrefix }}{{ $term = printf "%s/%s" (strings.TrimPrefix "/" .) $term }}{{ end -}}
 {{ if and .Site.Params.enableGiscus (ne .Params.comment false) }}
 <script src="https://giscus.app/client.js"
         data-repo="{{ .Site.Params.giscus.data_repo }}"
@@ -23,7 +31,7 @@
         data-category-id="{{ .Site.Params.giscus.data_category_id }}"
         data-mapping="{{ .Site.Params.giscus.data_mapping }}"
         {{ if eq .Site.Params.giscus.data_mapping "specific" }}
-        data-term="{{ .Params.slug | default .File.ContentBaseName }}"
+        data-term="{{ $term }}"
         {{ end }}
         data-strict="{{ .Site.Params.giscus.data_strict }}"
         data-reactions-enabled="{{ .Site.Params.giscus.data_reactions_enabled }}"

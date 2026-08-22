@@ -1,0 +1,37 @@
+{{/*
+  Override of themes/terminal/layouts/partials/language-menu.html.
+
+  Upstream ranges over `$.Site.Home.AllTranslations`, so every entry points at
+  a language's *home page*. A reader part-way through an article who switches
+  language gets thrown back to the index, which is the one thing a language
+  switcher exists to avoid.
+
+  This walks the site's languages instead and links the current page's
+  translation when there is one. Most pages have none -- only python-json is
+  translated so far -- so the fallback is still that language's home, but now
+  it is the fallback rather than the rule. The current language is kept in the
+  list to match how upstream renders, since the trigger shows it too.
+*/}}
+{{- $page := . -}}
+<ul class="menu menu--desktop menu--language-selector">
+  <li class="menu__trigger">{{ .Language.LanguageName }}&nbsp;▾</li>
+  <li>
+    <ul class="menu__dropdown">
+      {{- range site.Languages }}
+      {{- $lang := . }}
+      {{- $target := "" }}
+      {{- range $page.AllTranslations }}
+        {{- if eq .Language.Lang $lang.Lang }}{{ $target = .RelPermalink }}{{ end }}
+      {{- end }}
+      {{- if not $target }}
+        {{- range site.Home.AllTranslations }}
+          {{- if eq .Language.Lang $lang.Lang }}{{ $target = .RelPermalink }}{{ end }}
+        {{- end }}
+      {{- end }}
+      {{- with $target }}
+      <li><a href="{{ . }}">{{ $lang.LanguageName }}</a></li>
+      {{- end }}
+      {{- end }}
+    </ul>
+  </li>
+</ul>

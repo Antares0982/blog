@@ -1,0 +1,32 @@
+# One WordPress install per language became one Hugo site with two. Chinese is
+# the default and stays at the site root, so chr.fan/feed -- the URL a
+# university aggregator is subscribed to -- is untouched; English lives under
+# /en/.
+#
+# Content needs no renaming for this: an unsuffixed content/posts/foo.md *is*
+# the Chinese page, and Hugo pairs it with foo.en.md by base filename.
+#
+# Menus are per language and also per theme, so they live in
+# config/<theme>/hugo.toml rather than here.
+
+[zh]
+  languageName = "中文"
+  title = "α-Lyrae"
+  weight = 1
+  # Without this, countwords and summaries treat a Chinese paragraph as one
+  # word. It is per-language because it is wrong for the English post.
+  hasCJKLanguage = true
+  [zh.params]
+    # WordPress advertised zh-Hans; keep the feed identical for subscribers.
+    rssLanguage = "zh-Hans"
+    subtitle = "（｡ò ∀ ó｡）"
+    description = "（｡ò ∀ ó｡）"
+
+[en]
+  languageName = "English"
+  title = "α-Lyrae"
+  weight = 2
+  [en.params]
+    rssLanguage = "en"
+    subtitle = "（｡ò ∀ ó｡）"
+    description = "（｡ò ∀ ó｡）"

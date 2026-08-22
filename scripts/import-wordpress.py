@@ -5,7 +5,11 @@ Input is the JSON produced by scripts/export-wordpress.sh, which pulls
 `post_content_filtered` -- wp-editormd stores the author's original Markdown
 there, so nothing has to be reverse-engineered out of rendered HTML.
 
-Run:  scripts/export-wordpress.sh > wp-export.json && scripts/import-wordpress.py wp-export.json
+Run:  scripts/export-wordpress.sh > scripts/wp-export.json
+      scripts/import-wordpress.py scripts/wp-export.json
+
+      scripts/export-wordpress.sh antares wordpress_en > scripts/wp-export-en.json
+      scripts/import-wordpress.py scripts/wp-export-en.json en
 """
 
 import html
@@ -16,10 +20,19 @@ import sys
 from urllib.parse import quote, unquote
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SITE = "https://chr.fan"
 
-# WordPress stores post_date in the site's local time, which is UTC+8.
-TZ = "+08:00"
+# One WordPress install per language, each with its own origin to strip and its
+# own idea of local time -- post_date is stored in whatever the site was set to,
+# and en.chr.fan was left at UTC while chr.fan is Asia/Shanghai. Reading +08:00
+# off the English post would have shifted it eight hours in the feed.
+SITES = {
+    "zh": ("https://chr.fan", "+08:00"),
+    "en": ("https://en.chr.fan", "+00:00"),
+}
+DEFAULT_LANG = "zh"
+
+# Set from SITES by main(); the conversion helpers read them.
+SITE, TZ = SITES[DEFAULT_LANG]
 
 # Post IDs deliberately left behind. 305 was a `private` page in WordPress and
 # the Hugo repo is public, so migrating it would publish it. 3 was the privacy
@@ -107,12 +120,19 @@ def convert_body(md):
     md = md.replace("\r\n", "\n").replace("\r", "\n")
     md = unescape(md)
     md = "".join(fix_math(c) if is_math else c for is_math, c in split_math(md))
+    # Every origin, not just this language's. The English post embeds its
+    # figures from https://chr.fan/wp-content/ -- the same files, uploaded once
+    # to the Chinese site -- and links back to the Chinese article by absolute
+    # URL. Left alone, an English page served from blog.chr.fan would be
+    # fetching images from the WordPress install we are about to switch off.
+    #
     # Uploads keep their WordPress path so links shared elsewhere still resolve;
     # only the origin is dropped, which also makes the tree domain-agnostic for
     # the eventual move back to the apex domain.
-    md = md.replace(f"{SITE}/wp-content/", "/wp-content/")
-    # Internal cross-links between posts.
-    md = re.sub(rf"{re.escape(SITE)}/(?!wp-content/)", "/", md)
+    for origin, _ in SITES.values():
+        md = md.replace(f"{origin}/wp-content/", "/wp-content/")
+        # Internal cross-links between posts, in either language.
+        md = re.sub(rf"{re.escape(origin)}/(?!wp-content/)", "/", md)
     # After the origin is stripped, so the keys are the paths as written above.
     for old, new in MEDIA.items():
         md = md.replace(old, new)
@@ -178,7 +198,14 @@ def retarget(text, retargets):
     return text
 
 
-def main(path):
+def main(path, lang=DEFAULT_LANG):
+    global SITE, TZ
+    SITE, TZ = SITES[lang]
+    # Hugo pairs translations by base filename, so the Chinese page keeps the
+    # bare name -- it is the default language -- and English becomes
+    # `<slug>.en.md` beside it.
+    suffix = "" if lang == DEFAULT_LANG else f".{lang}"
+
     posts = json.load(open(path))
     by_id = {p["id"]: p for p in posts}
     retargets = build_retargets(by_id)
@@ -206,8 +233,11 @@ def main(path):
         ]
         if p.get("views"):
             fm.append(f'views: {int(p["views"])}')
-        if p.get("cats"):
-            fm.append(f'categories: {yaml_list(p["cats"])}')
+        # "Uncategorized" is WordPress's word for no category at all, which is
+        # what the English post has; it is not a category worth publishing.
+        cats = [c for c in (p.get("cats") or []) if c != "Uncategorized"]
+        if cats:
+            fm.append(f"categories: {yaml_list(cats)}")
         if p.get("tags"):
             fm.append(f'tags: {yaml_list(p["tags"])}')
         if not is_post:
@@ -222,7 +252,7 @@ def main(path):
         fm.append("---\n")
 
         subdir = "posts" if is_post else ""
-        out = os.path.join(ROOT, "content", subdir, slug + ".md")
+        out = os.path.join(ROOT, "content", subdir, slug + suffix + ".md")
         os.makedirs(os.path.dirname(out), exist_ok=True)
         with open(out, "w") as f:
             f.write("\n".join(fm) + "\n" + retarget(convert_body(body), retargets))
@@ -235,11 +265,13 @@ def main(path):
         if p["id"] in SKIP_IDS:
             continue
         assets.update(re.findall(r"/wp-content/uploads/[^\s\)\"'<>]+", convert_body(p["md"] or p["html"])))
-    with open(os.path.join(ROOT, "scripts", "assets.txt"), "w") as f:
+    # Per language, so an English run does not truncate the Chinese list that
+    # scripts/fetch-uploads.sh reads.
+    with open(os.path.join(ROOT, "scripts", f"assets{suffix}.txt"), "w") as f:
         f.write("\n".join(sorted(assets)) + "\n")
 
     print(f"wrote {len(written)} files, {len(assets)} referenced uploads")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else DEFAULT_LANG)

@@ -107,6 +107,34 @@ stdenvNoCC.mkDerivation {
       fi
     done
 
+    # The Chinese feed is the contract: it stays at /index.xml (chr.fan/feed)
+    # and English gets its own, rather than both being pushed into a language
+    # subdirectory. Getting this backwards is a one-line config mistake that
+    # would move the URL a university aggregator is subscribed to.
+    grep -q '<language>zh-Hans</language>' $out/index.xml \
+      || { echo "/index.xml is not the Chinese feed"; exit 1; }
+    grep -q '<language>en</language>' $out/en/index.xml \
+      || { echo "/en/index.xml is not the English feed"; exit 1; }
+
+    # giscus terms carry the language for everything but the default, so the
+    # two versions of an article are separate conversations -- and the Chinese
+    # terms stay bare, because the migrated WordPress comments are seeded
+    # against those. A term that silently changes orphans a discussion.
+    grep -q 'data-term=.\?python-json' $out/python-json/index.html \
+      || { echo "the Chinese giscus term is not the bare slug"; exit 1; }
+    grep -q 'data-term=.\?en/python-json' $out/en/python-json/index.html \
+      || { echo "the English giscus term does not carry its language"; exit 1; }
+
+    # Terminal has no i18n files -- every string is a param -- so a UI string
+    # left at the top level instead of under [languages.zh.params] renders
+    # Chinese on the English pages. Hugo says nothing about it.
+    for f in $out/en/index.html $out/en/python-json/index.html; do
+      if grep -qE '继续阅读|其他文章|更新的文章|更早的文章|更新于|目录|页面不存在|回到首页' "$f"; then
+        echo "a Chinese UI string leaked into $f"
+        exit 1
+      fi
+    done
+
     # No single file over 2 MB. The migrated ping-pong recording was a 9.8 MB
     # GIF -- three quarters of the repository, re-downloaded in full by every
     # `nix flake update` on the consuming host, and handed to every reader who

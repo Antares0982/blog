@@ -43,61 +43,38 @@ own component is what makes one branch possible.
 Both builds run the same installCheck list, so neither theme can quietly lose
 the feed, the comment archive, KaTeX or giscus.
 
-## Adding English
+## Two languages
 
-Decided, not built: there is no English content in this repo yet, and declaring
-the language before there is would publish an empty English site with a
-selector pointing at it. When en.chr.fan moves over, English goes at
-`chr.fan/en/` -- one Hugo site, one nginx vhost, and `en.chr.fan/*` 301s to
-`chr.fan/en/*`.
+Chinese is the default and stays at the site root, so `chr.fan/feed` -- the URL
+a university aggregator is subscribed to -- never moves. English lives under
+`/en/`.
 
-Content needs no renaming. With `defaultContentLanguage = "zh"` an unsuffixed
-`content/posts/foo.md` already *is* the Chinese page; the translation is
-`content/posts/foo.en.md` and Hugo pairs them by base filename.
+`content/posts/foo.md` *is* the Chinese page; `foo.en.md` beside it is the
+translation, paired by base filename. Nothing needed renaming for this.
 
-`config/_default/languages.toml`:
+en.chr.fan is still its own WordPress install, with the one article that has
+been translated. It keeps serving until the apex cutover, at which point it
+301s to `chr.fan/en/`; the date-prefixed permalinks need a regex, since the old
+URLs are `/2026/01/07/python-json/`.
 
-```toml
-[zh]
-  languageName = "中文"
-  title = "α-Lyrae"
-  weight = 1
-  hasCJKLanguage = true
-  [zh.params]
-    rssLanguage = "zh-Hans"
-  # the current [[menu.main]] from config/<theme>/hugo.toml moves here
-[en]
-  languageName = "English"
-  weight = 2
-  [en.params]
-    rssLanguage = "en"
-```
+`scripts/import-wordpress.py` takes the language as its second argument and
+picks the origin and timezone from it. The two installs disagree about the
+latter -- chr.fan is Asia/Shanghai, en.chr.fan was left at UTC -- so reading
+one site's offset for the other silently shifts the post eight hours.
 
-plus `defaultContentLanguage = "zh"` and `defaultContentLanguageInSubdir =
-false` in `config/_default/hugo.toml`, and `showLanguageSelector = true` in the
-terminal config.
+Three things that are load-bearing here, each of which fails silently:
 
-Three things to get right:
+- **giscus terms carry the language** for everything but the default, so
+  `/python-json/` and `/en/python-json/` are separate conversations. The
+  Chinese terms stay bare slugs, because the migrated WordPress comments are
+  seeded against those.
+- **`rssLanguage` is per language.** Left at the top level the English feed
+  advertises itself as `zh-Hans`.
+- **Terminal has no i18n files** -- every UI string is a param -- so anything
+  left in the shared `[params]` renders Chinese on the English pages. diary
+  carries its own `i18n/zh.yaml` and needs none of this.
 
-**`rssLanguage` has to move under each language.** It is a single global value
-today, and the feed template reads
-`.Site.Params.rssLanguage | default .Site.Language.Lang`. Left at the top level
-the English feed would advertise itself as `zh-Hans`. Everything else is safe:
-with the default language out of a subdirectory, the Chinese feed stays at
-`/index.xml` (`chr.fan/feed`) and English gets its own at `/en/index.xml`.
-
-**giscus terms collide.** `data-term` is the slug, so `/python-json/` and
-`/en/python-json/` would land in the same discussion and the English page would
-show the Chinese comments. The term needs the language folded in for anything
-that is not the default one, unless sharing a thread is what you want.
-
-**The theme's selector only links language home pages.** It renders
-`$.Site.Home.AllTranslations`, not `.Translations` of the current page, so it
-never deep-links a reader to the translation of the post they are reading. That
-needs a partial of our own in `overlay/terminal/`.
-
-The English UI strings need no work: every one of Terminal's is a param whose
-fallback is already English, so `[en.params]` simply omits the Chinese ones.
+The build fails on all three.
 
 ## Build
 

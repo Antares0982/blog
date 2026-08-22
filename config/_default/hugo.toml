@@ -6,14 +6,16 @@
 # baseURL is overridden by nix/site.nix (`hugo --baseURL`) so the same tree can
 # be built for blog.chr.fan today and chr.fan after the cutover.
 baseURL = "https://blog.chr.fan/"
-title = "α-Lyrae"
-defaultContentLanguage = "zh"
 copyright = "© Antares0982"
 enableEmoji = true
-# Chinese posts: without this, countwords/summaries treat a paragraph as one word.
-hasCJKLanguage = true
 # WordPress served every post at /<slug>/; keep those URLs.
 uglyURLs = false
+
+# Chinese is the default and is *not* pushed into /zh/, so every existing URL
+# survives -- above all chr.fan/feed. Titles, subtitles, rssLanguage and
+# hasCJKLanguage are per language now; see config/_default/languages.toml.
+defaultContentLanguage = "zh"
+defaultContentLanguageInSubdir = false
 
 [sitemap]
   changefreq = "weekly"
@@ -52,10 +54,6 @@ uglyURLs = false
     endLevel = 4
 
 [params]
-  subtitle = "（｡ò ∀ ó｡）"
-  description = "（｡ò ∀ ó｡）"
-  # WordPress advertised zh-Hans; keep the feed identical for subscribers.
-  rssLanguage = "zh-Hans"
   enableLaTeX = true
   # Historical view counts migrated from WordPress; the counter endpoint tops
   # them up live. Empty string disables the live call and shows the baseline.
