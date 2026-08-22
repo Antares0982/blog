@@ -1,0 +1,11 @@
+result
+result-*
+public/
+.hugo_build.lock
+resources/_gen/
+scripts/wp-export.json
+scripts/wp-comments.json
+
+# materialised by ./dev.sh and by the Nix build; not source
+themes/
+static/vendor/

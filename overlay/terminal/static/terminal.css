@@ -1,0 +1,19 @@
+/*
+  Palette. Terminal's partials/head.html links this file, if it exists, after
+  its own bundle and before static/style.css -- it is the theme's designated
+  place for redefining the three variables everything else derives from.
+  Generator and presets: https://panr.github.io/terminal-css/
+
+  This is the theme's own "Matrix" preset, taken whole: foreground and accent
+  are the same green, on pure black. Text measures 13.9:1 against the
+  background and the theme's dimmest derived tone, the 65% mix it uses for
+  post metadata, still clears 5.9:1.
+
+  Nothing else in the site hardcodes a colour, so changing these three lines is
+  the whole job.
+*/
+:root {
+  --background: #000000;
+  --foreground: #4eee85;
+  --accent: #4eee85;
+}

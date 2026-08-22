@@ -1,0 +1,13 @@
+{{/*
+  View count for one post. Renders the number only; partials/extended_head.html
+  carries the single fetch that tops every counter on the page up at once, so a
+  ten-post index costs one request rather than ten.
+
+  `views` in front matter is the total the post carried over from WordPress and
+  is written straight into the HTML, so the number is right with JavaScript off
+  and right on first paint -- no layout shift, no blocking request.
+*/}}
+{{ if .Site.Params.viewCounterEndpoint }}
+<i class="material-icons" style="font-size:inherit;vertical-align:-2px">visibility</i>
+<span class="post-views" data-views-path="{{ .RelPermalink }}">{{ .Params.views | default 0 }}</span>
+{{ end }}

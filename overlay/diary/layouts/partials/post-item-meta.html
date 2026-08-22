@@ -1,0 +1,21 @@
+{{/*
+  Override of themes/diary/layouts/partials/post-item-meta.html, used by the
+  index, section and taxonomy listings.
+
+  Upstream's estimated reading time is dropped: 220 words per minute is an
+  English figure, and `hasCJKLanguage` counts a Chinese post character by
+  character, so the estimate was wrong for nearly every post here.
+
+  The view count carries no font-size of its own. `.post-item-meta` sets 16px
+  and the children inherit it; sizing the counter down made it look like a
+  rendering fault next to the date.
+*/}}
+<div class="post-item-meta">
+    {{ i18n "format_date" .PublishDate }}
+    &emsp;
+    {{ partial "views.html" . }}
+    {{ if .Draft }}
+    &emsp;
+    <span class="draft-label">{{ i18n "draft" }}</span>
+    {{ end }}
+</div>

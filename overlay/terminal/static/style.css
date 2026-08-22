@@ -1,0 +1,93 @@
+/*
+  Site CSS. Terminal's partials/head.html links static/style.css if it exists,
+  after its own bundle, so this needs no head override and no injected <style>.
+  (assets/css/*.css is the wrong door: the theme globs that directory too, but
+  Hugo's union filesystem returns project assets *before* theme assets, so a
+  file dropped there loses the cascade rather than winning it.)
+
+  Everything below uses the theme's own custom properties, so a palette change
+  in static/terminal.css carries through.
+*/
+
+/* --- KaTeX ------------------------------------------------------------- */
+/*
+  Terminal has no math support at all; the loader lives in
+  partials/extended_head.html. Two of its base rules need undoing for it.
+
+  `word-break: break-word` is set on `*`, which lets the browser break inside a
+  formula and shears fractions and radicals apart. Display math also has no
+  business inheriting the body's monospace metrics or overflowing the column.
+*/
+.katex,
+.katex * {
+  word-break: normal;
+}
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 2px 0;
+}
+
+/* --- post meta --------------------------------------------------------- */
+/*
+  `.post-meta > *:not(:first-child)::before` already inserts the theme's "::"
+  separator, so the counter only needs to not wrap.
+*/
+.post-views-meta {
+  white-space: nowrap;
+}
+
+/* --- archived WordPress comments --------------------------------------- */
+/* partials/comments-archive.html. Structure is <ol>/<li>; see the note there. */
+.comments-archive {
+  margin: 40px 0 20px;
+}
+.comments-archive-head {
+  padding-bottom: 6px;
+  border-bottom: 1px dotted color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.comments-archive-head h3 {
+  display: inline;
+  margin: 0;
+  color: var(--accent);
+}
+.comments-archive-note {
+  margin-left: 0.6em;
+  font-size: 0.8em;
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+}
+.comments-archive-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* Selected structurally, so `comments-archive-item` stays a string that only
+   ever appears in the markup; nix/site.nix counts it. */
+.comments-archive-list > li {
+  padding-top: 16px;
+}
+.comments-archive-meta {
+  font-size: 0.85em;
+  color: color-mix(in srgb, var(--foreground) 65%, transparent);
+}
+.comments-archive-author {
+  color: var(--accent);
+}
+.comments-archive-badge {
+  margin-left: 0.5em;
+  padding: 0 0.4em;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
+  font-size: 0.85em;
+}
+.comments-archive-replyto,
+.comments-archive-meta time {
+  margin-left: 0.6em;
+}
+.comments-archive-body p {
+  margin: 4px 0;
+}
+.comments-archive-replies {
+  margin-left: 4px;
+  padding-left: 16px;
+  border-left: 1px dotted color-mix(in srgb, var(--foreground) 30%, transparent);
+}

@@ -1,0 +1,85 @@
+# Shared by both themes. Hugo merges this with config/<theme>/hugo.toml, chosen
+# by `hugo --environment <theme>`; nix/site.nix passes the flag. Anything that
+# would read differently under diary than under terminal belongs over there,
+# not here.
+#
+# baseURL is overridden by nix/site.nix (`hugo --baseURL`) so the same tree can
+# be built for blog.chr.fan today and chr.fan after the cutover.
+baseURL = "https://blog.chr.fan/"
+title = "α-Lyrae"
+defaultContentLanguage = "zh"
+copyright = "© Antares0982"
+enableEmoji = true
+# Chinese posts: without this, countwords/summaries treat a paragraph as one word.
+hasCJKLanguage = true
+# WordPress served every post at /<slug>/; keep those URLs.
+uglyURLs = false
+
+[sitemap]
+  changefreq = "weekly"
+  filename = "sitemap.xml"
+  priority = 0.5
+
+[pagination]
+  pagerSize = 10
+
+[taxonomies]
+  tag = "tags"
+  category = "categories"
+
+[permalinks]
+  posts = "/:slug/"
+
+[markup]
+  [markup.goldmark.renderer]
+    # Posts came from wp-editormd and contain raw <del>/<blockquote>/<img> HTML.
+    unsafe = true
+  [markup.goldmark.extensions]
+    # KaTeX handles the math client-side; Goldmark must not eat $...$ or the
+    # backslashes inside it.
+    [markup.goldmark.extensions.passthrough]
+      enable = true
+      [markup.goldmark.extensions.passthrough.delimiters]
+        block = [['$$', '$$'], ['\[', '\]']]
+        inline = [['$', '$'], ['\(', '\)']]
+  [markup.highlight]
+    codeFences = true
+    guessSyntax = false
+    lineNos = false
+    tabWidth = 4
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 4
+
+[params]
+  subtitle = "（｡ò ∀ ó｡）"
+  description = "（｡ò ∀ ó｡）"
+  # WordPress advertised zh-Hans; keep the feed identical for subscribers.
+  rssLanguage = "zh-Hans"
+  enableLaTeX = true
+  # Historical view counts migrated from WordPress; the counter endpoint tops
+  # them up live. Empty string disables the live call and shows the baseline.
+  viewCounterEndpoint = "/api/views.json"
+
+  # Announcements is the repo's built-in category and has exactly the format
+  # giscus recommends: only maintainers and giscus itself can open discussions
+  # in it, so nobody can seed the mapping with discussions of their own.
+  enableGiscus = true
+
+  [params.giscus]
+    data_repo = "Antares0982/blog"
+    data_repo_id = "R_kgDOT_wEAA"
+    data_category = "Announcements"
+    data_category_id = "DIC_kwDOT_wEAM4DD4oE"
+    # `specific` rather than `pathname`, with the term supplied per page by
+    # each theme's comment partial; see the note there for why.
+    data_mapping = "specific"
+    data_strict = "1"
+    data_reactions_enabled = "1"
+    data_emit_metadata = "0"
+    data_input_position = "bottom"
+    data_theme = "preferred_color_scheme"
+    data_lang = "zh-CN"
+    # The snippet giscus.app hands you drops this attribute; the partial emits it.
+    data_loading = "lazy"
+    crossorigin = "anonymous"

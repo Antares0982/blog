@@ -1,0 +1,58 @@
+{{- /*
+  Shared by both themes, which is why it sits in layouts/ rather than under
+  overlay/. terminal ships no RSS template at all and diary's is unbuildable on
+  Hugo >= 0.146 (it reads .Site.Author, removed in that release), so this is the
+  feed under either one -- and the feed is the one thing a theme swap must not
+  disturb.
+
+  The important part is the <guid>. The school's RSS aggregator has already
+  seen every old post under the guid WordPress minted for it, with
+  isPermaLink="false". Emitting anything else here would make all ten posts
+  look brand new to it. So each migrated post carries its original guid
+  verbatim in the `wpguid` front-matter key -- not rebuilt from the post ID,
+  because the oldest one is `http://43.129.210.213/?p=1`, the bare IP of the
+  server that predated the domain. Only genuinely new posts get a permalink
+  guid.
+
+  Note there is no CDATA anywhere. Hugo renders templates through
+  html/template, which escapes a literal `<![CDATA[` into `&lt;![CDATA[` and
+  quietly corrupts the feed. transform.XMLEscape is the supported way to put
+  markup inside an XML text node.
+*/ -}}
+{{- $limit := 20 -}}
+{{- $pages := where .Site.RegularPages "Params.hidden" "!=" true -}}
+{{- printf "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" | safeHTML }}
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ .Site.Title }}</title>
+    <link>{{ .Site.BaseURL }}</link>
+    <description>{{ .Site.Params.description }}</description>
+    <language>{{ .Site.Params.rssLanguage | default .Site.Language.Lang }}</language>
+    <generator>Hugo</generator>
+    {{- with (index $pages 0) }}
+    <lastBuildDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</lastBuildDate>
+    {{- end }}
+    <atom:link href="{{ "feed/" | absURL }}" rel="self" type="application/rss+xml" />
+    {{- range first $limit $pages }}
+    <item>
+      <title>{{ .Title }}</title>
+      <link>{{ .Permalink }}</link>
+      <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" | safeHTML }}</pubDate>
+      <dc:creator>{{ .Params.author | default "Antares0982" }}</dc:creator>
+      {{- range .Params.categories }}
+      <category>{{ . }}</category>
+      {{- end }}
+      {{- range .Params.tags }}
+      <category>{{ . }}</category>
+      {{- end }}
+      {{- with .Params.wpguid }}
+      <guid isPermaLink="false">{{ . }}</guid>
+      {{- else }}
+      <guid isPermaLink="true">{{ .Permalink }}</guid>
+      {{- end }}
+      <description>{{ .Summary | transform.XMLEscape | safeHTML }}</description>
+      <content:encoded>{{ .Content | transform.XMLEscape | safeHTML }}</content:encoded>
+    </item>
+    {{- end }}
+  </channel>
+</rss>

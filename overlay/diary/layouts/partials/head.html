@@ -1,0 +1,185 @@
+{{/*
+  Override of themes/diary/layouts/partials/head.html.
+
+  Two reasons this file exists:
+    1. Upstream loads Material Icons from fonts.googleapis.com and KaTeX from
+       cdn.jsdelivr.net. Both are render-blocking and both are slow-to-dead from
+       mainland China. Everything here is served from this origin instead;
+       nix/site.nix vendors the files into static/vendor/.
+    2. The comment-system branches we do not use (gitalk, disqus, twikoo,
+       waline, livere) and the analytics branches (Clarity, Cloudflare) are
+       dropped, so this stays readable. giscus is kept.
+*/}}
+<head>
+<title>{{ .Title }}</title>
+
+{{ $description := .Params.description }}
+{{ if .IsHome }}{{ $description = .Site.Params.description }}{{ end }}
+
+<meta charset="utf-8">
+<meta name="X-UA-Compatible" content="IE=edge">
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=5, user-scalable=5" name="viewport">
+<meta content="telephone=no" name="format-detection">
+<meta name="description" content="{{ $description }}">
+<meta name="renderer" content="webkit">
+<meta name="theme-color" content="#ffffff">
+
+{{ if .Site.Params.enableOpenGraph }}{{ template "_internal/opengraph.html" . }}{{ end }}
+{{ if .Site.Params.enableTwitterCards }}{{ template "_internal/twitter_cards.html" . }}{{ end }}
+
+{{ with .Params.canonicalUrl }}<link rel="canonical" href="{{ . }}">{{ end }}
+{{ with .Site.Params.favicon }}<link rel="icon" href="{{ . | absURL }}">{{ end }}
+
+{{ if .OutputFormats.Get "RSS" }}
+<link rel="alternate" type="application/rss+xml" title="{{ .Site.Title }}" href="/feed/">
+{{ end }}
+
+{{ if and (not .Params.disableToC) .IsPage }}
+<script src="{{ "js/toc.js" | relURL }}"></script>
+{{ end }}
+<link type="text/css" rel="stylesheet" href="{{ "vendor/css/bootstrap.min.css" | relURL }}">
+
+{{ if not .Site.Params.disableDarkmode }}
+  {{ $css := resources.Get "scss/dark-mode.scss" | toCSS | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}" media="screen">
+{{ else }}
+  {{ $css := resources.Get "scss/journal.scss" | toCSS | minify | fingerprint }}
+  <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}" media="screen">
+{{ end }}
+
+{{/* Self-hosted replacement for https://fonts.googleapis.com/css?family=Material+Icons */}}
+<style>
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  font-display: block;
+  src: url({{ "vendor/fonts/MaterialIcons-Regular.woff2" | relURL }}) format('woff2');
+}
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+</style>
+
+{{/*
+  The collapsible menu groups from partials/nav-menu.html. The theme has no
+  styling for <details>, and its own `.nav-link-subitem` rule only sets a font
+  size and strips the bullets.
+*/}}
+<style>
+/*
+  No flexbox here on purpose. The sidebar is `text-align: right` and the mobile
+  drawer centres its items, so laying the summary out as a flex row pinned the
+  label to the left edge while every sibling item stayed right-aligned, which
+  read as a broken row. Inline flow inherits whichever alignment the container
+  already uses, so the group lines up with its siblings in both places.
+*/
+.nav-link-group > summary {
+  cursor: pointer;
+  /* Suppresses both the standard marker and Safari's legacy one. */
+  list-style: none;
+}
+.nav-link-group > summary::-webkit-details-marker { display: none; }
+.nav-link-group > summary::after {
+  content: "\25BE";
+  display: inline-block;
+  margin-left: 0.35em;
+  font-size: 0.85em;
+  opacity: 0.55;
+  transition: transform 0.15s ease;
+}
+.nav-link-group[open] > summary::after { transform: rotate(180deg); }
+.nav-link-group > .nav-link-subitem {
+  margin: 6px 0 2px 0;
+  padding: 0;
+  list-style: none;
+}
+/* Inset from the right, since that is the edge the sidebar aligns to. */
+.nav-link-group > .nav-link-subitem li { padding: 3px 14px 3px 0; }
+.nav-link-group > .nav-link-subitem a { color: inherit; opacity: 0.75; }
+.nav-link-group > .nav-link-subitem a:hover { opacity: 1; }
+
+/*
+  partials/comments-archive.html. Nothing here sets a text colour: the block is
+  built out of <li>, which the theme's dark mode already recolours, so it
+  follows the night toggle on its own.
+
+  The rules are grey-first and then restated with color-mix so a browser
+  without color-mix still gets a visible divider rather than none.
+*/
+.comments-archive { margin-bottom: 32px; }
+.comments-archive-head {
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.28);
+  border-bottom-color: color-mix(in srgb, currentColor 18%, transparent);
+}
+.comments-archive-head h3 { display: inline; margin: 0; font-size: 1.1em; }
+.comments-archive-note { margin-left: 0.6em; font-size: 0.8em; opacity: 0.55; }
+.comments-archive-list { margin: 0; padding: 0; list-style: none; }
+/* Selected structurally, so `comments-archive-item` stays a string that
+   only ever appears in the markup; nix/site.nix counts it. */
+.comments-archive-list > li { padding-top: 14px; }
+.comments-archive-meta { font-size: 0.85em; opacity: 0.7; }
+.comments-archive-author { font-weight: 600; }
+.comments-archive-badge {
+  margin-left: 0.5em;
+  padding: 0 0.4em;
+  border: 1px solid rgba(128, 128, 128, 0.45);
+  border-color: color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 3px;
+  font-size: 0.85em;
+}
+.comments-archive-replyto,
+.comments-archive-meta time { margin-left: 0.6em; }
+.comments-archive-body p { margin: 4px 0; }
+.comments-archive-replies {
+  margin-left: 4px;
+  padding-left: 16px;
+  border-left: 2px solid rgba(128, 128, 128, 0.28);
+  border-left-color: color-mix(in srgb, currentColor 18%, transparent);
+}
+</style>
+
+{{ if or .Params.enableLaTeX .Site.Params.enableLaTeX }}
+<link rel="stylesheet" href="{{ "vendor/katex/katex.min.css" | relURL }}">
+<script defer src="{{ "vendor/katex/katex.min.js" | relURL }}"></script>
+<script defer src="{{ "vendor/katex/auto-render.min.js" | relURL }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ],
+    // Chinese posts are full of prices and shell prompts; don't blow up on them.
+    throwOnError: false,
+    ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+  });
+});
+</script>
+{{ end }}
+
+{{/*
+  No giscus here. Upstream emits the loader in both head.html and
+  comment.html, which renders the widget twice -- giscus injects its iframe
+  wherever the script tag sits, so the head copy also lands in the wrong
+  place. partials/comment.html owns it.
+*/}}
+
+{{- partial "extended_head.html" . }}
+</head>

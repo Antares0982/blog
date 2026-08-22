@@ -1,0 +1,15 @@
+{{/*
+  View count for one post. partials/extended_head.html carries the single fetch
+  that tops every counter on the page up at once, so a ten-post index costs one
+  request rather than ten.
+
+  `views` in front matter is the total the post carried over from WordPress and
+  is written straight into the HTML, so the number is right with JavaScript off
+  and right on first paint -- no layout shift, no blocking request.
+
+  The eye is a plain character. The diary build pulled Material Icons in for
+  it; Terminal ships no icon font and is not worth adding one to.
+*/}}
+{{ if .Site.Params.viewCounterEndpoint -}}
+<span class="post-views-meta">&#128065;&nbsp;<span class="post-views" data-views-path="{{ .RelPermalink }}">{{ .Params.views | default 0 }}</span></span>
+{{- end }}

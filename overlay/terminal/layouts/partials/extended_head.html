@@ -1,0 +1,62 @@
+{{/*
+  Terminal's designated head hook, called at the end of its partials/head.html.
+  Two things live here that the theme does not do at all.
+
+  1. KaTeX. Terminal has no math support of any kind, so the whole setup is
+     ours: nix/vendor.nix puts the files under static/vendor/katex and they are
+     served from this origin. cdn.jsdelivr.net is render-blocking and
+     slow-to-dead from mainland China.
+
+  2. The view counter's top-up fetch. One request per page tops up every
+     counter partials/views.html rendered, so a ten-post index costs the same
+     single request a post page does.
+
+     The endpoint holds only the hits recorded since the WordPress migration;
+     each span already contains that post's historical total and the two are
+     added. It is regenerated on a timer from the nginx access log, so a page
+     view costs the server nothing beyond the log line it was already writing.
+     See server/hk/blog.nix and server/hk/blog-view-counter.py in the Nix repo.
+*/}}
+{{ if or .Params.enableLaTeX .Site.Params.enableLaTeX }}
+<link rel="stylesheet" href="{{ "vendor/katex/katex.min.css" | relURL }}">
+<script defer src="{{ "vendor/katex/katex.min.js" | relURL }}"></script>
+<script defer src="{{ "vendor/katex/auto-render.min.js" | relURL }}"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '$', right: '$', display: false },
+      { left: '\\(', right: '\\)', display: false },
+      { left: '\\[', right: '\\]', display: true }
+    ],
+    // Chinese posts are full of prices and shell prompts; don't blow up on them.
+    throwOnError: false,
+    ignoredTags: ["script", "noscript", "style", "textarea", "pre", "code"]
+  });
+});
+</script>
+{{ end }}
+
+{{ with .Site.Params.viewCounterEndpoint }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var els = document.querySelectorAll(".post-views");
+  if (!els.length) return;
+  fetch({{ . }}, { cache: "default" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d) return;
+      Array.prototype.forEach.call(els, function (el) {
+        var base = parseInt(el.textContent, 10) || 0;
+        // Hugo percent-encodes the Chinese slugs; the counter keys on the
+        // decoded path so that links using WordPress's lowercase encoding and
+        // Hugo's uppercase one land on the same entry.
+        var key = decodeURIComponent(el.dataset.viewsPath);
+        el.textContent = base + (d[key] || 0);
+      });
+    })
+    .catch(function () {});
+});
+</script>
+{{ end }}

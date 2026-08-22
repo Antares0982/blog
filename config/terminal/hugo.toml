@@ -1,0 +1,72 @@
+# hugo --environment terminal. Merged on top of config/_default/hugo.toml.
+#
+# `terminal-overlay` is this repo's layouts/ and static/ for this theme, staged
+# under themes/ by nix/site.nix. Hugo takes theme components in priority order,
+# so the overlay wins over the theme and the project's own layouts/ wins over
+# both -- which is where the theme-agnostic templates live.
+theme = ["terminal-overlay", "terminal"]
+
+[markup]
+  [markup.highlight]
+    # Terminal ships its own syntax.css and expects Chroma classes, not inline
+    # styles; `noClasses = true` would paint a light theme over its dark one.
+    noClasses = false
+
+[params]
+  # Posts live in content/posts/, which is what the theme lists on the home
+  # page. Everything in content/ root stays out of the stream, as under
+  # WordPress; `hidden: true` keeps the same pages out of the feed.
+  contentTypeName = "posts"
+  # Terminal's default container is `max-width: 864px` with no auto margin, so
+  # it sits flush against the left edge with a rule down its right side -- the
+  # terminal-window look it is going for, which on a wide screen just reads as
+  # a page that failed to lay out. This centres it and drops the rule. The 864px
+  # measure stays; `fullWidthTheme` would remove it too, and full-width lines of
+  # Chinese are unreadable.
+  centerTheme = true
+  dateFormat = "2006-01-02"
+  showLastUpdated = true
+  toc = true
+  tocTitle = "目录"
+
+  # `showMenuItems` is deliberately unset: Terminal's dropdown is an overflow
+  # menu (the first N items inline, the rest under `menuMore`), and with four
+  # entries there is nothing to overflow. Leaving it unset takes the theme's
+  # other branch, which renders every item inline. Note its menu partial skips
+  # any item with children outright, so a nested group is not an option here
+  # even if the menu grows -- which is why this menu is flat and diary's is not.
+
+  # Terminal ships no i18n files; every UI string is a param, and the fallback
+  # for each is English.
+  readMore = "继续阅读"
+  readOtherPosts = "其他文章"
+  newerPosts = "更新的文章"
+  olderPosts = "更早的文章"
+  updatedDatePrefix = "更新于"
+  missingContentMessage = "页面不存在"
+  missingBackButtonLabel = "回到首页"
+
+  [params.logo]
+    logoText = "α-Lyrae"
+    logoHomeLink = "/"
+
+[[menu.main]]
+  identifier = "home"
+  name = "首页"
+  url = "/"
+  weight = 1
+[[menu.main]]
+  identifier = "about"
+  name = "简介"
+  url = "/about/"
+  weight = 2
+[[menu.main]]
+  identifier = "words"
+  name = "杂谈"
+  url = "/words/"
+  weight = 3
+[[menu.main]]
+  identifier = "archive"
+  name = "存档"
+  url = "/archive/"
+  weight = 4

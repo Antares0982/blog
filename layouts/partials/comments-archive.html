@@ -1,0 +1,56 @@
+{{/*
+  The comments this post carried on WordPress, from data/comments.json (built
+  by scripts/import-comments.py). Read-only: WordPress is being decommissioned
+  and every new comment goes to giscus, which renders below this block.
+
+  Shared by both themes, hence layouts/ rather than overlay/. Keyed by slug,
+  not by path, for the same reason each theme's comment partial keys giscus by
+  slug -- see the note in overlay/terminal/layouts/partials/comments.html.
+
+  `html` is pre-sanitised by the import script against a closed whitelist of
+  <p>/<br>/<code>/<a>, so safeHTML here is not trusting the commenters.
+
+  Structure is <ol>/<li> on purpose: the theme's dark mode colours `li` and its
+  descendants, so the block follows the theme toggle without a rule of its own.
+*/}}
+{{- $key := .Params.slug | default .File.ContentBaseName -}}
+{{- with index hugo.Data.comments $key }}
+<div class="comments-archive">
+  <div class="comments-archive-head">
+    <h3>历史评论</h3>
+    <span class="comments-archive-note">迁移自 WordPress，只读</span>
+  </div>
+  <ol class="comments-archive-list">
+    {{- range . }}
+    <li class="comments-archive-item">
+      {{- $root := .author }}
+      <div class="comments-archive-meta">
+        {{- if .url }}<a class="comments-archive-author" href="{{ .url }}" rel="nofollow noopener ugc" target="_blank">{{ .author }}</a>
+        {{- else }}<span class="comments-archive-author">{{ .author }}</span>{{ end }}
+        {{- if .owner }}<span class="comments-archive-badge">博主</span>{{ end }}
+        <time datetime="{{ .date }}">{{ dateFormat "2006-01-02" .date }}</time>
+      </div>
+      <div class="comments-archive-body">{{ .html | safeHTML }}</div>
+      {{- with .replies }}
+      <ol class="comments-archive-list comments-archive-replies">
+        {{- range . }}
+        <li class="comments-archive-item">
+          <div class="comments-archive-meta">
+            {{- if .url }}<a class="comments-archive-author" href="{{ .url }}" rel="nofollow noopener ugc" target="_blank">{{ .author }}</a>
+            {{- else }}<span class="comments-archive-author">{{ .author }}</span>{{ end }}
+            {{- if .owner }}<span class="comments-archive-badge">博主</span>{{ end }}
+            {{- /* WordPress allowed three levels of nesting and this block has
+                   two, so a reply aimed at another reply says who it answered. */}}
+            {{- if and .reply_to (ne .reply_to $root) }}<span class="comments-archive-replyto">回复 @{{ .reply_to }}</span>{{ end }}
+            <time datetime="{{ .date }}">{{ dateFormat "2006-01-02" .date }}</time>
+          </div>
+          <div class="comments-archive-body">{{ .html | safeHTML }}</div>
+        </li>
+        {{- end }}
+      </ol>
+      {{- end }}
+    </li>
+    {{- end }}
+  </ol>
+</div>
+{{- end }}

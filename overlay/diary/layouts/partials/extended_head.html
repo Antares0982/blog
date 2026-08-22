@@ -1,0 +1,32 @@
+{{/*
+  One fetch per page tops up every counter partials/views.html rendered, so a
+  ten-post index costs the same single request a post page does.
+
+  The endpoint holds only the hits recorded since the WordPress migration; each
+  span already contains that post's historical total and the two are added. It
+  is regenerated on a timer from the nginx access log, so a page view costs the
+  server nothing beyond the log line it was already writing. See
+  server/hk/blog.nix and server/hk/blog-view-counter.py in the Nix repo.
+*/}}
+{{ with .Site.Params.viewCounterEndpoint }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  var els = document.querySelectorAll(".post-views");
+  if (!els.length) return;
+  fetch({{ . }}, { cache: "default" })
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (!d) return;
+      Array.prototype.forEach.call(els, function (el) {
+        var base = parseInt(el.textContent, 10) || 0;
+        // Hugo percent-encodes the Chinese slugs; the counter keys on the
+        // decoded path so that links using WordPress's lowercase encoding and
+        // Hugo's uppercase one land on the same entry.
+        var key = decodeURIComponent(el.dataset.viewsPath);
+        el.textContent = base + (d[key] || 0);
+      });
+    })
+    .catch(function () {});
+});
+</script>
+{{ end }}

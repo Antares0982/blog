@@ -1,0 +1,43 @@
+{{/*
+  Shared by partials/sidebar.html (desktop) and partials/mobile-header.html
+  (drawer). Both upstream copies carry the same three bugs:
+
+    1. `<div class="a-block" class="nav-link-item {{ $actived }}">` -- two class
+       attributes. Browsers keep the first and drop the second, so the item
+       loses all of its padding and `.nav-link-subitem`, which the stylesheet
+       only defines as a descendant of `.nav-link-item`, never matches. That is
+       why the submenu sat flush against the content column.
+    2. The collapse is `v-on:click` / `v-if`, but the theme only loads Vue for
+       the disqus comment widget. With giscus those attributes are inert, so
+       the submenu was permanently expanded.
+    3. The children are bare `<li>` with no list wrapper.
+
+  `<details>` collapses without any JavaScript at all, and opens itself when
+  the current page is inside the group.
+
+  Called as: {{ partial "nav-menu.html" (dict "ctx" . "class" "nav-link-item") }}
+*/}}
+{{- $ctx := .ctx -}}
+{{- $class := .class -}}
+{{- $current := $ctx.RelPermalink | absLangURL -}}
+{{- range $ctx.Site.Menus.main -}}
+  {{- if .HasChildren -}}
+    {{- $open := false -}}
+    {{- range .Children -}}
+      {{- if hasPrefix $current (.URL | absLangURL) }}{{ $open = true }}{{ end -}}
+    {{- end }}
+<details class="a-block {{ $class }} nav-link-group{{ if $open }} active{{ end }}"{{ if $open }} open{{ end }}>
+  <summary>{{ .Name }}</summary>
+  <ul class="nav-link-subitem">
+    {{- range .Children }}
+    <li><a href="{{ .URL }}">{{ .Name }}</a></li>
+    {{- end }}
+  </ul>
+</details>
+  {{- else -}}
+    {{/* Upstream marks an item active with hasPrefix, which makes "/" match
+         every page and leaves 首页 permanently highlighted. */}}
+    {{- $active := cond (eq .URL "/") (eq $current (absLangURL "")) (hasPrefix $current (.URL | absLangURL)) }}
+<a class="a-block {{ $class }}{{ if $active }} active{{ end }}" href="{{ .URL }}">{{ .Name }}</a>
+  {{- end -}}
+{{- end -}}

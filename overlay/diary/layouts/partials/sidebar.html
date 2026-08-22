@@ -1,0 +1,24 @@
+{{/*
+  Override of themes/diary/layouts/partials/sidebar.html. Only the menu block
+  changed; see partials/nav-menu.html for what was wrong with it.
+*/}}
+<div id="sideContainer" class="side-container">
+    <a class="a-block nav-head {{ if eq .Title .Site.Title }}active{{ else }}false{{ end }}" href="{{ "" | absLangURL }}">
+        <div class="nav-title">
+            {{ .Site.Title }}
+        </div>
+        {{ with .Site.Params.subtitle }}
+        <div class="nav-subtitle">
+            {{ . }}
+        </div>
+        {{ end }}
+    </a>
+
+    <div class="nav-link-list">
+        {{ partial "nav-menu.html" (dict "ctx" . "class" "nav-link-item") }}
+    </div>
+
+    <div class="nav-footer">
+        {{ partial "copyright.html" . }}
+    </div>
+</div>

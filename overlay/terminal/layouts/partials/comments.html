@@ -1,0 +1,40 @@
+{{/*
+  Terminal calls `partials/comments.html` from _default/single.html and ships
+  only a placeholder, so this file is an addition rather than an override.
+
+  It carries two things upstream's giscus snippet has no way to express:
+
+  data-term. The mapping is `specific` rather than `pathname` because the slug
+  outlives the path. Five pages moved from /<slug>/ to /words/<slug>/ once the
+  migration started honouring WordPress's page hierarchy, and three more were
+  renamed out of Chinese slugs; pathname mapping would have orphaned every
+  comment on all eight. The slug also survives the move back to the apex
+  domain, and reads as a title on GitHub.
+
+  data-loading. giscus.app hands you `data-loading="lazy"` when you tick the
+  lazy-loading box, but the stock snippet drops the attribute, so setting it in
+  config alone does nothing. It keeps the iframe out of the initial load, which
+  is the whole point of this rebuild.
+*/}}
+{{- partial "comments-archive.html" . -}}
+{{ if and .Site.Params.enableGiscus (ne .Params.comment false) }}
+<script src="https://giscus.app/client.js"
+        data-repo="{{ .Site.Params.giscus.data_repo }}"
+        data-repo-id="{{ .Site.Params.giscus.data_repo_id }}"
+        data-category="{{ .Site.Params.giscus.data_category }}"
+        data-category-id="{{ .Site.Params.giscus.data_category_id }}"
+        data-mapping="{{ .Site.Params.giscus.data_mapping }}"
+        {{ if eq .Site.Params.giscus.data_mapping "specific" }}
+        data-term="{{ .Params.slug | default .File.ContentBaseName }}"
+        {{ end }}
+        data-strict="{{ .Site.Params.giscus.data_strict }}"
+        data-reactions-enabled="{{ .Site.Params.giscus.data_reactions_enabled }}"
+        data-emit-metadata="{{ .Site.Params.giscus.data_emit_metadata }}"
+        data-input-position="{{ .Site.Params.giscus.data_input_position }}"
+        data-theme="{{ .Site.Params.giscus.data_theme }}"
+        data-lang="{{ .Site.Params.giscus.data_lang }}"
+        data-loading="{{ .Site.Params.giscus.data_loading | default "lazy" }}"
+        crossorigin="{{ .Site.Params.giscus.crossorigin }}"
+        async>
+</script>
+{{ end }}

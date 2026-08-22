@@ -1,0 +1,61 @@
+{
+  "nodes": {
+    "diary": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1769793441,
+        "narHash": "sha256-+bvVXTArS3NmfhkQanCMxk6Ogjo5BfzHzDub4lGNuc8=",
+        "owner": "AmazingRise",
+        "repo": "hugo-theme-diary",
+        "rev": "0d8afbaf3d6be6ae3b37c8f87cecf2946af5f8c1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "AmazingRise",
+        "repo": "hugo-theme-diary",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1787001381,
+        "narHash": "sha256-Ue1Yo8gfHdD4TMtNewhA4tkSYeFqXThju0nCyJc3ALo=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "ec2d622de0773551768cf98f3fc50cbcc003b9c5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "diary": "diary",
+        "nixpkgs": "nixpkgs",
+        "terminal": "terminal"
+      }
+    },
+    "terminal": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1775424101,
+        "narHash": "sha256-6xrlhTqxJoB2LMFa0lcsDB73i7aJxvbVhScKxqoVeXc=",
+        "owner": "panr",
+        "repo": "hugo-theme-terminal",
+        "rev": "4acd067c48195ac503541ba75f9259c7158d3792",
+        "type": "github"
+      },
+      "original": {
+        "owner": "panr",
+        "repo": "hugo-theme-terminal",
+        "type": "github"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
