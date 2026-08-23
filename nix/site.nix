@@ -145,6 +145,16 @@ stdenvNoCC.mkDerivation {
     grep -qE '<link rel="?(shortcut )?icon"? href=[^>]*favicon\.png' $out/index.html \
       || { echo "no <link rel=icon> pointing at favicon.png in the head"; exit 1; }
 
+    # Same two failure modes for the link-preview card, and this one is worse
+    # to notice: terminal also ships an og-image.png of its own, so losing
+    # static/ here means Telegram quietly shows the theme's default art. diary
+    # emits no og:image at all unless the site `images` param survives -- which
+    # is exactly what a stray sub-table above it would eat.
+    cmp -s static/og-image.png $out/og-image.png \
+      || { echo "$out/og-image.png is not this repo's static/og-image.png"; exit 1; }
+    grep -qE '<meta property="og:image" content="[^"]*og-image\.png"' $out/index.html \
+      || { echo "no og:image pointing at og-image.png in the head"; exit 1; }
+
     # No single file over 2 MB. The migrated ping-pong recording was a 9.8 MB
     # GIF -- three quarters of the repository, re-downloaded in full by every
     # `nix flake update` on the consuming host, and handed to every reader who

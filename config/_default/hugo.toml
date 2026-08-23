@@ -64,6 +64,13 @@ defaultContentLanguageInSubdir = false
   # in it, so nobody can seed the mapping with discussions of their own.
   enableGiscus = true
 
+  # Link-preview card (Telegram, Twitter, Slack). terminal hardcodes
+  # `og-image.png` in its head partial and ignores this; diary emits no og:image
+  # at all unless Hugo's internal opengraph template finds it here. Both resolve
+  # to static/og-image.png. Keep bare keys above any sub-table -- after one they
+  # belong to it.
+  images = ["og-image.png"]
+
   [params.giscus]
     data_repo = "Antares0982/blog"
     data_repo_id = "R_kgDOT_wEAA"
