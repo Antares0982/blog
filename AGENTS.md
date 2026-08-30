@@ -57,6 +57,15 @@ file is picked up normally. Adding `static/foo.png` and building gives you the
 theme's `foo.png` with no warning. `git add` new files before building --
 `./dev.sh` does not have this problem, which makes the discrepancy worse.
 
+**Hugo comes from whichever nixpkgs is doing the building**, and this repo's
+`flake.lock` is not the one the server uses -- the Nix repo calls
+`lib.mkSite` with its *own* `pkgs`. A stale lock here means `nix build` passes
+locally and the same tree fails on the server, on a Hugo version you never ran.
+`nix flake update nixpkgs` here when that happens, and reproduce before fixing.
+Hugo 0.165 started minifying XML, which collapsed the feed to a single line and
+turned a `grep -c` in the check into a count of the file rather than of the
+matches.
+
 **TOML sub-tables swallow everything after them.** A bare key written below
 `[params.giscus]` belongs to `params.giscus`, not `params`. Hugo reads the
 misplaced key as unset and says nothing. This has broken giscus once already.

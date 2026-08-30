@@ -57,7 +57,9 @@ stdenvNoCC.mkDerivation {
     runHook preInstallCheck
 
     test -s $out/index.xml || { echo "RSS feed missing or empty"; exit 1; }
-    test "$(grep -c 'isPermaLink="false"' $out/index.xml)" = 10 \
+    # grep -o, not grep -c: Hugo minifies XML as of 0.165 and the whole feed is
+    # one line, so counting lines counts the file.
+    test "$(grep -o 'isPermaLink="false"' $out/index.xml | wc -l)" = 10 \
       || { echo "expected 10 migrated posts to carry their WordPress guids"; exit 1; }
 
     # Only asset references count; posts are allowed to *link* to jsdelivr.
