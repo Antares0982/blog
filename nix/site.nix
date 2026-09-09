@@ -69,6 +69,11 @@ stdenvNoCC.mkDerivation {
       exit 1
     fi
 
+    if grep -rFq 'blog.chr.fan' $out; then
+      echo "the old blog hostname leaked into the output"
+      exit 1
+    fi
+
     # Neither theme ships math support; the KaTeX wiring is entirely ours, and
     # nothing upstream would complain if it stopped being loaded. The formulas
     # would just render as raw TeX.

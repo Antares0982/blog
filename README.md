@@ -2,9 +2,6 @@
 
 Hugo source for [chr.fan](https://chr.fan), migrated off WordPress + Sakurairo.
 
-Currently deployed at **blog.chr.fan**; the apex domain still runs WordPress
-until the cutover.
-
 ## Layout
 
 | Path | |
@@ -52,10 +49,9 @@ a university aggregator is subscribed to -- never moves. English lives under
 `content/posts/foo.md` *is* the Chinese page; `foo.en.md` beside it is the
 translation, paired by base filename. Nothing needed renaming for this.
 
-en.chr.fan is still its own WordPress install, with the one article that has
-been translated. It keeps serving until the apex cutover, at which point it
-301s to `chr.fan/en/`; the date-prefixed permalinks need a regex, since the old
-URLs are `/2026/01/07/python-json/`.
+The former English WordPress site redirects `en.chr.fan` to `chr.fan/en/`.
+Its date-prefixed permalinks, such as `/2026/01/07/python-json/`, redirect to
+the corresponding undated Hugo slug.
 
 `scripts/import-wordpress.py` takes the language as its second argument and
 picks the origin and timezone from it. The two installs disagree about the
@@ -86,8 +82,7 @@ nix build .#blog-diary    # the other theme, for comparison
 ```
 
 The Nix repo consumes this flake as an input and points nginx at
-`packages.blog` (or `packages.blog-apex` after the cutover, which differs only
-in `baseURL`). See `server/hk/blog.nix` there.
+`packages.blog`. See `server/hk/blog.nix` there.
 
 ## Things that are load-bearing
 

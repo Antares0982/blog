@@ -17,7 +17,6 @@ actually cost a build cycle.
 ```sh
 nix build                 # terminal, what the server gets -> ./result
 nix build .#blog-diary    # the other theme
-nix build .#blog-apex     # identical but baseURL = https://chr.fan/
 ./dev.sh [terminal|diary] # live preview on http://localhost:1313
 nix fmt                   # nixfmt-tree, for nix/ and flake.nix
 ```

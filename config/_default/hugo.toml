@@ -3,9 +3,7 @@
 # would read differently under diary than under terminal belongs over there,
 # not here.
 #
-# baseURL is overridden by nix/site.nix (`hugo --baseURL`) so the same tree can
-# be built for blog.chr.fan today and chr.fan after the cutover.
-baseURL = "https://blog.chr.fan/"
+baseURL = "https://chr.fan/"
 copyright = "© Antares0982"
 enableEmoji = true
 # WordPress served every post at /<slug>/; keep those URLs.
